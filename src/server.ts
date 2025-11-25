@@ -78,7 +78,7 @@ async function apiRequest<T>(
 // ============================================================================
 
 const server = new McpServer({
-  name: "cloud-agent-mcp",
+  name: "cursor-cloud-agent-mcp",
   version: "1.0.0",
 });
 
@@ -926,7 +926,7 @@ const app = express();
 app.use(express.json());
 
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", service: "cloud-agent-mcp", version: "1.0.0" });
+  res.json({ status: "ok", service: "cursor-cloud-agent-mcp", version: "1.0.0" });
 });
 
 app.post("/mcp", async (req, res) => {

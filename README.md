@@ -123,9 +123,9 @@ Install via Smithery for easy setup and management:
 npm install -g @smithery/cli
 
 # Install this MCP server
-smithery install cloud-agent-mcp --client cursor
+smithery install cursor-cloud-agent-mcp --client cursor
 # or for Claude Desktop
-smithery install cloud-agent-mcp --client claude
+smithery install cursor-cloud-agent-mcp --client claude
 ```
 
 After installation, configure your `CURSOR_API_KEY` environment variable. Smithery will handle the rest.

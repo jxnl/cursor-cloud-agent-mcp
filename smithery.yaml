@@ -1,4 +1,4 @@
-name: cloud-agent-mcp
+name: cursor-cloud-agent-mcp
 version: 1.0.0
 description: MCP server that exposes Cursor Cloud Agents API endpoints as tools for AI assistants. Lets AI assistants create and manage cloud agents that work on GitHub repositories.
 entry: src/server.ts
@@ -26,7 +26,7 @@ transport:
   url: http://localhost:${PORT:-3000}/mcp
 
 repository:
-  url: https://github.com/jxnl/cloud-agent-mcp
+  url: https://github.com/jxnl/cursor-cloud-agent-mcp
 
 keywords:
   - mcp

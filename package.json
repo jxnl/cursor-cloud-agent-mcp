@@ -1,5 +1,5 @@
 {
-  "name": "cloud-agent-mcp",
+  "name": "cursor-cloud-agent-mcp",
   "version": "1.0.0",
   "description": "MCP server that exposes Cursor Cloud Agents API endpoints as tools for AI assistants",
   "type": "module",
