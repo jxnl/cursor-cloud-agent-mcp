@@ -4,6 +4,8 @@ import express from "express";
 import * as z from "zod/v3";
 import { exec } from "child_process";
 import { promisify } from "util";
+import { readFile } from "fs/promises";
+import { resolve } from "path";
 
 const execAsync = promisify(exec);
 
@@ -422,6 +424,7 @@ server.registerTool(
 - With branch: \`create_agent({ prompt: "Fix bug", repository: "https://github.com/owner/repo", ref: "main" })\`
 - Auto-create PR: \`create_agent({ prompt: "Add feature", repository: "https://github.com/owner/repo", auto_pr: true })\`
 - Custom branch: \`create_agent({ prompt: "Add feature", repository: "https://github.com/owner/repo", branch_name: "feature/new-feature" })\`
+- With plan file: \`create_agent({ prompt: "Implement features", repository: "https://github.com/owner/repo", plan_file: "./plan.md" })\`
 
 **Workflow:** 
 1. Use \`get_repos\` to discover repository URLs
@@ -452,6 +455,12 @@ server.registerTool(
         .string()
         .optional()
         .describe("LLM model to use (omit for auto-selection)"),
+      plan_file: z
+        .string()
+        .optional()
+        .describe(
+          "Path to a plan file to include in the prompt (relative or absolute path)"
+        ),
     },
     outputSchema: {
       id: z.string(),
@@ -462,14 +471,39 @@ server.registerTool(
         branchName: z.string().optional(),
         url: z.string().optional(),
         autoCreatePr: z.boolean().optional(),
+        openAsCursorGithubApp: z.boolean().optional(),
+        skipReviewerRequest: z.boolean().optional(),
       }),
       createdAt: z.string(),
     },
   },
   async (args) => {
     try {
+      let promptText = args.prompt;
+
+      // Read plan file if provided
+      if (args.plan_file) {
+        try {
+          const planPath = resolve(args.plan_file);
+          const planContent = await readFile(planPath, "utf-8");
+          promptText = `${args.prompt}\n\n## Plan File\n\n${planContent}`;
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Error reading plan file: ${errorMessage}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+
       const requestBody: Record<string, unknown> = {
-        prompt: { text: args.prompt },
+        prompt: { text: promptText },
         source: { repository: args.repository },
       };
 
@@ -493,7 +527,13 @@ server.registerTool(
         name: string;
         status: string;
         source: { repository: string; ref?: string };
-        target: { branchName?: string; url?: string; autoCreatePr?: boolean };
+        target: {
+          branchName?: string;
+          url?: string;
+          autoCreatePr?: boolean;
+          openAsCursorGithubApp?: boolean;
+          skipReviewerRequest?: boolean;
+        };
         createdAt: string;
       }>("POST", "/v0/agents", requestBody);
 
@@ -926,7 +966,11 @@ const app = express();
 app.use(express.json());
 
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", service: "cursor-cloud-agent-mcp", version: "1.0.0" });
+  res.json({
+    status: "ok",
+    service: "cursor-cloud-agent-mcp",
+    version: "1.0.0",
+  });
 });
 
 app.post("/mcp", async (req, res) => {
