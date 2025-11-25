@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "cursor-cloud-agent": {
+      "command": "npx",
+      "args": ["-y", "cursor-cloud-agent-mcp"],
+      "env": {
+        "CURSOR_API_KEY": "${env:CURSOR_API_KEY}"
+      }
+    }
+  }
+}

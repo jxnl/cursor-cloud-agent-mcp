@@ -1,0 +1,12 @@
+node_modules/
+.cursor/
+.git/
+.env
+*.log
+dist/
+.DS_Store
+tsconfig.json
+smithery.yaml
+mcp_docs.md
+docs.md
+
