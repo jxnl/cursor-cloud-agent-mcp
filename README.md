@@ -2,6 +2,29 @@
 
 MCP server for the [Cursor Cloud Agents API](https://cursor.com/docs/cloud-agent/api). Lets AI assistants create and manage cloud agents that work on GitHub repositories.
 
+## Quick Start
+
+```bash
+# Install
+npm install -g cursor-cloud-agent-mcp
+
+# Set your API key
+export CURSOR_API_KEY=your_api_key_here
+
+# Use with Cursor (create .cursor/mcp.json)
+{
+  "mcpServers": {
+    "cursor-cloud-agent": {
+      "command": "npx",
+      "args": ["-y", "cursor-cloud-agent-mcp"],
+      "env": {
+        "CURSOR_API_KEY": "${env:CURSOR_API_KEY}"
+      }
+    }
+  }
+}
+```
+
 ## Installation
 
 ### Install from npm
@@ -16,7 +39,7 @@ Or install locally in your project:
 npm install cursor-cloud-agent-mcp
 ```
 
-### Quick Start (Development)
+### Install from Source
 
 If you're developing or want to run from source:
 
@@ -37,9 +60,124 @@ npm start
 npm run start:stdio
 ```
 
-## Tools
+## Configuration
 
-### Discovery (start here)
+### Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `CURSOR_API_KEY` | Yes | API key from [cursor.com/settings](https://cursor.com/settings) |
+| `PORT` | No | Server port for HTTP version only (default: 3000) |
+
+### Connecting Clients
+
+#### Cursor
+
+**Option 1: Using npm package (Recommended)**
+
+After installing via npm, create `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "cursor-cloud-agent": {
+      "command": "npx",
+      "args": ["-y", "cursor-cloud-agent-mcp"],
+      "env": {
+        "CURSOR_API_KEY": "${env:CURSOR_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+Or if installed globally:
+
+```json
+{
+  "mcpServers": {
+    "cursor-cloud-agent": {
+      "command": "cursor-cloud-agent-mcp",
+      "env": {
+        "CURSOR_API_KEY": "${env:CURSOR_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+**Option 2: From source (Development)**
+
+If running from source, create `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "cursor-cloud-agent": {
+      "command": "npm",
+      "args": ["run", "start:stdio"],
+      "env": {
+        "CURSOR_API_KEY": "${env:CURSOR_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+**Option 3: HTTP Server (Alternative)**
+
+If you prefer the HTTP version, configure it as:
+
+```json
+{
+  "mcpServers": {
+    "cursor-cloud-agent": {
+      "url": "http://localhost:3000/mcp",
+      "headers": {}
+    }
+  }
+}
+```
+
+Then run `npm start` in a separate terminal to start the HTTP server.
+
+#### Claude Desktop
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "cloud-agent": {
+      "type": "http",
+      "url": "http://localhost:3000/mcp"
+    }
+  }
+}
+```
+
+#### MCP Inspector
+
+```bash
+npx @modelcontextprotocol/inspector
+# Connect to http://localhost:3000/mcp
+```
+
+## Usage
+
+### Typical Workflow
+
+```text
+1. get_repos          → Get current repo URL and branch
+2. create_task       → Launch task with prompt
+3. get_task          → Check status (CREATING → RUNNING → FINISHED)
+4. add_followup       → (optional) Send more instructions while running
+5. get_conversation   → Review what the task did
+```
+
+### Available Tools
+
+#### Discovery Tools
 
 | Tool | Description |
 |------|-------------|
@@ -47,7 +185,7 @@ npm run start:stdio
 | `get_me` | Get API key info (verify authentication) |
 | `get_models` | List available LLM models |
 
-### Task Lifecycle
+#### Task Lifecycle Tools
 
 | Tool | Description |
 |------|-------------|
@@ -58,9 +196,44 @@ npm run start:stdio
 | `get_conversation` | Get full conversation history |
 | `delete_task` | Permanently delete a task |
 
-## Usage Examples
+### Common Examples
 
-### Discovery Tools
+#### Create a Task
+
+```json
+{
+  "tool": "create_task",
+  "arguments": {
+    "prompt": "Add a README.md file with installation instructions",
+    "repository": "https://github.com/your-org/your-repo",
+    "auto_pr": true
+  }
+}
+```
+
+#### List Tasks
+
+```json
+{
+  "tool": "list_tasks",
+  "arguments": {
+    "filter": "FINISHED|RUNNING",
+    "limit": 10
+  }
+}
+```
+
+#### Get Repository Info
+
+```json
+{
+  "tool": "get_repos"
+}
+```
+
+## Reference
+
+### Tool Documentation
 
 #### `get_repos` - Get Repositories
 
@@ -133,8 +306,6 @@ npm run start:stdio
   "tool": "get_models"
 }
 ```
-
-### Task Lifecycle Tools
 
 #### `create_task` - Launch a Cloud Task
 
@@ -374,11 +545,11 @@ npm run start:stdio
 }
 ```
 
-## Response Shapes
+### Response Shapes
 
 All tools return structured JSON responses matching the [Cloud Agents API](https://cursor.com/docs/cloud-agent/api) specification. See `docs.md` for complete API documentation.
 
-### `get_me` Response
+#### `get_me` Response
 
 ```json
 {
@@ -388,7 +559,7 @@ All tools return structured JSON responses matching the [Cloud Agents API](https
 }
 ```
 
-### `get_models` Response
+#### `get_models` Response
 
 ```json
 {
@@ -400,7 +571,7 @@ All tools return structured JSON responses matching the [Cloud Agents API](https
 }
 ```
 
-### `get_repos` Response
+#### `get_repos` Response
 
 ```json
 {
@@ -420,7 +591,7 @@ All tools return structured JSON responses matching the [Cloud Agents API](https
 }
 ```
 
-### `create_task` Response
+#### `create_task` Response
 
 ```json
 {
@@ -442,7 +613,7 @@ All tools return structured JSON responses matching the [Cloud Agents API](https
 }
 ```
 
-### `list_tasks` Response
+#### `list_tasks` Response
 
 ```json
 {
@@ -471,7 +642,7 @@ All tools return structured JSON responses matching the [Cloud Agents API](https
 }
 ```
 
-### `get_task` Response
+#### `get_task` Response
 
 ```json
 {
@@ -497,7 +668,7 @@ All tools return structured JSON responses matching the [Cloud Agents API](https
 
 **Status Values:** `CREATING`, `RUNNING`, `FINISHED`, `FAILED`, `CANCELLED`
 
-### `get_conversation` Response
+#### `get_conversation` Response
 
 ```json
 {
@@ -517,7 +688,7 @@ All tools return structured JSON responses matching the [Cloud Agents API](https
 }
 ```
 
-### `add_followup` Response
+#### `add_followup` Response
 
 ```json
 {
@@ -525,7 +696,7 @@ All tools return structured JSON responses matching the [Cloud Agents API](https
 }
 ```
 
-### `delete_task` Response
+#### `delete_task` Response
 
 ```json
 {
@@ -533,17 +704,9 @@ All tools return structured JSON responses matching the [Cloud Agents API](https
 }
 ```
 
-## Typical Workflow
+## Advanced
 
-```text
-1. get_repos          → Get current repo URL and branch
-2. create_task       → Launch task with prompt
-3. get_task          → Check status (CREATING → RUNNING → FINISHED)
-4. add_followup       → (optional) Send more instructions while running
-5. get_conversation   → Review what the task did
-```
-
-## Prompt: Plan Parallel Tasks
+### Plan Parallel Tasks
 
 Use `/plan-parallel-tasks` to break down a project for multiple parallel tasks:
 
@@ -559,7 +722,7 @@ This will:
 3. Group tasks into phases (parallel → sequential)
 4. Provide exact prompts for each `create_task` call
 
-### Parallelization Rules
+#### Parallelization Rules
 
 **CAN run in parallel:**
 
@@ -572,145 +735,20 @@ This will:
 - Tasks where one depends on another's output
 - Tasks that both modify package.json, tsconfig.json, etc.
 
-## Connecting Clients
-
-### Claude Desktop
-
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "cloud-agent": {
-      "type": "http",
-      "url": "http://localhost:3000/mcp"
-    }
-  }
-}
-```
-
-### Cursor
-
-#### Option 1: Using npm package (Recommended)
-
-After installing via npm (`npm install -g cursor-cloud-agent-mcp` or `npm install cursor-cloud-agent-mcp`), create `.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "cursor-cloud-agent": {
-      "command": "npx",
-      "args": ["-y", "cursor-cloud-agent-mcp"],
-      "env": {
-        "CURSOR_API_KEY": "${env:CURSOR_API_KEY}"
-      }
-    }
-  }
-}
-```
-
-Or if installed globally:
-
-```json
-{
-  "mcpServers": {
-    "cursor-cloud-agent": {
-      "command": "cursor-cloud-agent-mcp",
-      "env": {
-        "CURSOR_API_KEY": "${env:CURSOR_API_KEY}"
-      }
-    }
-  }
-}
-```
-
-#### Option 2: From source (Development)
-
-If running from source, create `.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "cursor-cloud-agent": {
-      "command": "npm",
-      "args": ["run", "start:stdio"],
-      "env": {
-        "CURSOR_API_KEY": "${env:CURSOR_API_KEY}"
-      }
-    }
-  }
-}
-```
-
-#### Option 3: HTTP Server (Alternative)
-
-If you prefer the HTTP version, configure it as:
-
-```json
-{
-  "mcpServers": {
-    "cursor-cloud-agent": {
-      "url": "http://localhost:3000/mcp",
-      "headers": {}
-    }
-  }
-}
-```
-
-Then run `npm start` in a separate terminal to start the HTTP server.
-
-### MCP Inspector
-
-```bash
-npx @modelcontextprotocol/inspector
-# Connect to http://localhost:3000/mcp
-```
-
-### Smithery
-
-Install via Smithery for easy setup and management. Smithery uses the stdio version (recommended for local integrations):
-
-```bash
-# Install Smithery CLI (if not already installed)
-npm install -g @smithery/cli
-
-# Install this MCP server
-smithery install cursor-cloud-agent-mcp --client cursor
-# or for Claude Desktop
-smithery install cursor-cloud-agent-mcp --client claude
-```
-
-After installation, configure your `CURSOR_API_KEY` environment variable. Smithery will handle the rest.
-
-To publish your own version to Smithery:
-
-```bash
-# Login to Smithery
-smithery login
-
-# Publish from your repository
-smithery publish --repo=YOUR_GITHUB_REPO_URL
-```
-
-## Server Versions
+### Server Versions
 
 This package includes two server versions:
 
 - **HTTP Server** (`src/server.ts`): Runs an Express HTTP server on port 3000. Use for remote connections or when you need HTTP endpoints.
-- **Stdio Server** (`src/server-stdio.ts`): Uses standard input/output. Recommended for local integrations and used by Smithery. Better for process-based spawning.
+- **Stdio Server** (`src/server-stdio.ts`): Uses standard input/output. Recommended for local integrations. Better for process-based spawning.
 
 Run with:
 - HTTP: `npm start` (default)
 - Stdio: `npm run start:stdio`
 
-## Environment Variables
+## Development
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `CURSOR_API_KEY` | Yes | API key from [cursor.com/settings](https://cursor.com/settings) |
-| `PORT` | No | Server port for HTTP version only (default: 3000) |
-
-## Health Check
+### Health Check
 
 The server exposes a health check endpoint:
 
@@ -718,9 +756,9 @@ The server exposes a health check endpoint:
 curl http://localhost:3000/health
 ```
 
-Returns: `{"status":"ok","service":"cursor-cloud-agent-mcp","version":"1.0.0"}`
+Returns: `{"status":"ok","service":"cursor-cloud-agent-mcp","version":"1.0.2"}`
 
-## Publishing to npm
+### Publishing to npm
 
 To publish this package to npm:
 
