@@ -1,0 +1,38 @@
+name: cloud-agent-mcp
+version: 1.0.0
+description: MCP server that exposes Cursor Cloud Agents API endpoints as tools for AI assistants. Lets AI assistants create and manage cloud agents that work on GitHub repositories.
+entry: src/server.ts
+
+runtime:
+  type: node
+  version: ">=18.0.0"
+
+install:
+  command: npm install
+
+start:
+  command: npm start
+  env:
+    - name: CURSOR_API_KEY
+      description: API key from https://cursor.com/settings
+      required: true
+    - name: PORT
+      description: Server port (default: 3000)
+      required: false
+      default: "3000"
+
+transport:
+  type: http
+  url: http://localhost:${PORT:-3000}/mcp
+
+repository:
+  url: https://github.com/YOUR_USERNAME/cloud-agent-mcp
+
+keywords:
+  - mcp
+  - model-context-protocol
+  - cloud-agents
+  - cursor
+  - github
+  - automation
+
