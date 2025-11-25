@@ -1,5 +1,5 @@
 name: cursor-cloud-agent-mcp
-version: 1.0.0
+version: 1.0.1
 description: MCP server that exposes Cursor Cloud Agents API endpoints as tools for AI assistants. Lets AI assistants create and manage cloud agents that work on GitHub repositories.
 entry: bin/cli.js
 
